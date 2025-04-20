@@ -2,6 +2,7 @@ package steamservice
 
 import (
 	"steam-api/internal/steamclient"
+	"steam-api/pkg/utils"
 	"time"
 )
 
@@ -11,15 +12,15 @@ type RecentlyPlayedGames struct {
 }
 
 type RecentlyPlayedGame struct {
-	ID                     int           `json:"id"`
-	Name                   string        `json:"name"`
-	ImgIconUrl             string        `json:"img_icon_url"`
-	Playtime2Weeks         time.Duration `json:"playtime_2_weeks"`
-	PlaytimeForever        time.Duration `json:"playtime_forever"`
-	PlaytimeWindowsForever time.Duration `json:"playtime_windows_forever"`
-	PlaytimeMacForever     time.Duration `json:"playtime_mac_forever"`
-	PlaytimeLinuxForever   time.Duration `json:"playtime_linux_forever"`
-	PlaytimeDeckForever    time.Duration `json:"playtime_deck_forever"`
+	ID                     int            `json:"id"`
+	Name                   string         `json:"name"`
+	ImgIconUrl             string         `json:"img_icon_url"`
+	Playtime2Weeks         utils.Duration `json:"playtime_2_weeks"`
+	PlaytimeForever        utils.Duration `json:"playtime_forever"`
+	PlaytimeWindowsForever utils.Duration `json:"playtime_windows_forever"`
+	PlaytimeMacForever     utils.Duration `json:"playtime_mac_forever"`
+	PlaytimeLinuxForever   utils.Duration `json:"playtime_linux_forever"`
+	PlaytimeDeckForever    utils.Duration `json:"playtime_deck_forever"`
 }
 
 func RecentlyPlayedGamesFromAPI(m *steamclient.GetRecentlyPlayedGamesAPIResponse) RecentlyPlayedGames {
@@ -44,12 +45,12 @@ func recentlyPlayedGameFromAPI(m []steamclient.RecentlyPlayedGame) []RecentlyPla
 			ID:                     v.ID,
 			Name:                   v.Name,
 			ImgIconUrl:             v.ImgIconUrl,
-			Playtime2Weeks:         time.Second * time.Duration(v.Playtime2Weeks),
-			PlaytimeForever:        time.Second * time.Duration(v.PlaytimeForever),
-			PlaytimeWindowsForever: time.Second * time.Duration(v.PlaytimeWindowsForever),
-			PlaytimeMacForever:     time.Second * time.Duration(v.PlaytimeMacForever),
-			PlaytimeLinuxForever:   time.Second * time.Duration(v.PlaytimeLinuxForever),
-			PlaytimeDeckForever:    time.Second * time.Duration(v.PlaytimeDeckForever),
+			Playtime2Weeks:         utils.NewDuration(time.Minute * time.Duration(v.Playtime2Weeks)),
+			PlaytimeForever:        utils.NewDuration(time.Minute * time.Duration(v.PlaytimeForever)),
+			PlaytimeWindowsForever: utils.NewDuration(time.Minute * time.Duration(v.PlaytimeWindowsForever)),
+			PlaytimeMacForever:     utils.NewDuration(time.Minute * time.Duration(v.PlaytimeMacForever)),
+			PlaytimeLinuxForever:   utils.NewDuration(time.Minute * time.Duration(v.PlaytimeLinuxForever)),
+			PlaytimeDeckForever:    utils.NewDuration(time.Minute * time.Duration(v.PlaytimeDeckForever)),
 		}
 	}
 

@@ -27,13 +27,11 @@ func main() {
 		log.Fatal("STEAM_API_KEY environment variable not set")
 	}
 
-	service := steamgamecomparator.New(
-		steamservice.New(
-			steamclient.New(apiKey),
-		),
-	)
+	steamClient := steamclient.New(apiKey)
+	steamService := steamservice.New(steamClient)
+	comparatorService := steamgamecomparator.New(steamService)
 
-	response, err := service.CompareOwnedGames(testUser1, testUser2)
+	response, err := comparatorService.CompareOwnedGames(testUser1, testUser2)
 	if err != nil {
 		log.Fatalf("Error fetching games for user 1: %v", err)
 	}
