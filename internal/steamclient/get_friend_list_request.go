@@ -1,4 +1,4 @@
-package steam
+package steamclient
 
 type GetFriendListFilter string
 

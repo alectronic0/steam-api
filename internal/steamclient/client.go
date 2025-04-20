@@ -1,4 +1,4 @@
-package steam
+package steamclient
 
 import (
 	"net/url"
@@ -13,6 +13,8 @@ const (
 
 // IClient - https://developer.valvesoftware.com/wiki/Steam_Web_API
 type IClient interface {
+	GetSupportedAPIList() (*GetSupportedAPIListAPIResponse, error)
+
 	GetPlayerSummaries(steamID ...string) (*GetPlayerSummariesAPIResponse, error)
 	GetFriendList(steamID string, filter GetFriendListFilter) (*GetFriendListAPIResponse, error)
 	GetPlayerAchievements(steamID string, appID string) (*GetPlayerAchievementsAPIResponse, error)
@@ -25,10 +27,15 @@ type Client struct {
 	apiKey string
 }
 
-func NewClient(apiKey string) IClient {
+func New(apiKey string) IClient {
 	return &Client{
 		apiKey: apiKey,
 	}
+}
+
+func (c Client) GetSupportedAPIList() (*GetSupportedAPIListAPIResponse, error) {
+	reqURL := BaseApiURL + "/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" + url.QueryEscape(c.apiKey)
+	return httpclient.Get[GetSupportedAPIListAPIResponse](reqURL)
 }
 
 func (c Client) GetPlayerSummaries(steamIDs ...string) (*GetPlayerSummariesAPIResponse, error) {

@@ -27,3 +27,5 @@ go.work.sum
 .idea/
 
 example_data/
+
+comparison_result.json
