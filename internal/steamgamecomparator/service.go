@@ -3,7 +3,7 @@ package steamgamecomparator
 import "steam-api/internal/steamservice"
 
 type IService interface {
-	CompareOwnedGames(steamID1, steamIDs string) (*Response, error)
+	CompareOwnedGames(steamID1, steamIDs uint64) (*Response, error)
 }
 type Service struct {
 	service steamservice.IService
@@ -15,7 +15,7 @@ func New(service steamservice.IService) IService {
 	}
 }
 
-func (s Service) CompareOwnedGames(steamID1, steamID2 string) (*Response, error) {
+func (s Service) CompareOwnedGames(steamID1, steamID2 uint64) (*Response, error) {
 	user1, err := s.service.GetUserInfo(steamID1)
 	if err != nil {
 		return nil, err

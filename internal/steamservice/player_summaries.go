@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type PlayerSummaries map[string]PlayerSummary
+type PlayerSummaries map[uint64]PlayerSummary
 
 type PlayerSummary struct {
-	ID                       string    `json:"id"`
+	ID                       uint64    `json:"id"`
 	CommunityVisibilityState int64     `json:"community_visibility_state"`
 	ProfileState             int64     `json:"profile_state"`
 	PersonaName              string    `json:"persona_name"`

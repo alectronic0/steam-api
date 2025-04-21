@@ -3,12 +3,38 @@ package steamservice
 import "steam-api/internal/steamclient"
 
 type IService interface {
-	GetUserInfo(steamID string) (*UserInfoWithGameInfo, error)
-	GetUserInfoWithGameInfo(steamID string, appID string) (*UserInfoWithGameInfo, error)
+	GetSupportApiList(apiKey string, steamID, appID uint64) (SupportedAPIList, error)
+
+	GetUserInfo(steamID uint64) (*UserInfoWithGameInfo, error)
+	GetUserInfoWithGameInfo(steamID, appID uint64) (*UserInfoWithGameInfo, error)
+	GetAppList() (map[uint64]string, error)
 }
 
 type Service struct {
 	client steamclient.IClient
+}
+
+func (s Service) GetAppList() (map[uint64]string, error) {
+	appList, err := s.client.GetAppList()
+	if err != nil {
+		return map[uint64]string{}, err
+	}
+
+	mapOfApps := map[uint64]string{}
+	for _, v := range appList.AppList.Apps {
+		mapOfApps[v.AppID] = v.Name
+	}
+
+	return mapOfApps, nil
+}
+
+func (s Service) GetSupportApiList(apiKey string, steamID, appID uint64) (SupportedAPIList, error) {
+	supportedAPIList, err := s.client.GetSupportedAPIList()
+	if err != nil {
+		return SupportedAPIList{}, err
+	}
+
+	return SupportedAPIListFromAPI(supportedAPIList, apiKey, steamID, appID), nil
 }
 
 func New(client steamclient.IClient) IService {
@@ -17,7 +43,7 @@ func New(client steamclient.IClient) IService {
 	}
 }
 
-func (s Service) GetUserInfo(steamID string) (*UserInfoWithGameInfo, error) {
+func (s Service) GetUserInfo(steamID uint64) (*UserInfoWithGameInfo, error) {
 	var (
 		err                         error
 		playerSummariesResponse     *steamclient.GetPlayerSummariesAPIResponse
@@ -56,7 +82,7 @@ func (s Service) GetUserInfo(steamID string) (*UserInfoWithGameInfo, error) {
 	}, nil
 }
 
-func (s Service) GetUserInfoWithGameInfo(steamID string, appID string) (*UserInfoWithGameInfo, error) {
+func (s Service) GetUserInfoWithGameInfo(steamID, appID uint64) (*UserInfoWithGameInfo, error) {
 	var (
 		err                         error
 		playerSummariesResponse     *steamclient.GetPlayerSummariesAPIResponse

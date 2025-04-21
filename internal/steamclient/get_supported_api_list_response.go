@@ -5,7 +5,7 @@ type GetSupportedAPIListAPIResponse struct {
 }
 
 type ApiList struct {
-	Interface []Interface `json:"interfaces"`
+	Interfaces []Interface `json:"interfaces"`
 }
 
 type Interface struct {

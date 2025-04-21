@@ -5,17 +5,15 @@ import (
 	"log"
 	"os"
 	"steam-api/internal/steamclient"
-	"steam-api/internal/steamgamecomparator"
 	"steam-api/internal/steamservice"
 	"steam-api/pkg/utils"
 	"strconv"
-	"time"
 
 	"github.com/joho/godotenv"
 )
 
 const (
-	fileNameTemplate = "./output/comparison_result_%v_%v_%v.json"
+	filename = "./output/steam_api_list_results.json"
 )
 
 func main() {
@@ -34,16 +32,10 @@ func main() {
 		log.Fatal("TEST_USER_1 environment variable is either not set or is not a valid uint64")
 	}
 
-	testUser2, err := strconv.ParseUint(os.Getenv("TEST_USER_2"), 10, 64)
-	if err != nil {
-		log.Fatal("TEST_USER_2 environment variable is either not set or is not a valid uint64")
-	}
-
 	steamClient := steamclient.New(apiKey)
 	steamService := steamservice.New(steamClient)
-	comparatorService := steamgamecomparator.New(steamService)
 
-	response, err := comparatorService.CompareOwnedGames(testUser1, testUser2)
+	response, err := steamService.GetSupportApiList(apiKey, testUser1, 4000)
 	if err != nil {
 		log.Fatalf("Error fetching games for user 1: %v", err)
 	}
@@ -54,7 +46,6 @@ func main() {
 		log.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	filename := fmt.Sprintf(fileNameTemplate, testUser1, testUser2, time.Now().Unix())
 	if err = os.WriteFile(filename, outData, 0644); err != nil {
 		log.Fatalf("Failed to write output file: %v", err)
 	}

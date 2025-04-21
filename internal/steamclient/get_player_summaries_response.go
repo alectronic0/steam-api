@@ -9,7 +9,7 @@ type PlayerSummaries struct {
 }
 
 type Player struct {
-	ID                       string `json:"steamid"`
+	ID                       uint64 `json:"steamid"`
 	Communityvisibilitystate int64  `json:"communityvisibilitystate"`
 	Profilestate             int64  `json:"profilestate"`
 	Personaname              string `json:"personaname"`
