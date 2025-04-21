@@ -1,6 +1,8 @@
 package steamservice
 
-import "steam-api/internal/steamclient"
+import (
+	"steam-api/internal/steamclient"
+)
 
 type IService interface {
 	GetSupportApiList(apiKey, steamID, appID string) (SupportedAPIList, error)
@@ -149,9 +151,9 @@ func (s Service) HydrateGames(games []OwnedGame) ([]OwnedGame, error) {
 		return games, err
 	}
 
-	for _, game := range games {
+	for i, game := range games {
 		if data, ok := storeData[game.ID]; ok {
-			game.StoreData = &data.Data
+			games[i].StoreData = &data.Data
 		}
 	}
 

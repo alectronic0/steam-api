@@ -1,49 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"github.com/joho/godotenv"
 	"log"
-	"os"
+	"steam-api/internal/config"
 	"steam-api/internal/steamclient"
 	"steam-api/internal/steamservice"
 	"steam-api/pkg/utils"
 )
 
-const (
-	filename = "./output/steam_api_list_results.json"
-)
+const filename = "./output/steam_api_list_results.json"
 
 func main() {
-	err := godotenv.Load(".env")
+	appConfig, err := config.LoadAppConfig()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %s", err)
+		log.Fatal(err)
 	}
 
-	apiKey := os.Getenv("STEAM_API_KEY")
-	if apiKey == "" {
-		log.Fatal("STEAM_API_KEY environment variable not set")
-	}
-
-	testUser1 := os.Getenv("TEST_USER_1")
-
-	steamClient := steamclient.New(apiKey)
+	steamClient := steamclient.New(appConfig.ApiKey)
 	steamService := steamservice.New(steamClient)
 
-	response, err := steamService.GetSupportApiList(apiKey, testUser1, "4000")
+	response, err := steamService.GetSupportApiList(appConfig.ApiKey, appConfig.TestUserID1, appConfig.TestAppID1)
 	if err != nil {
-		log.Fatalf("Error fetching games for user 1: %v", err)
+		log.Fatal(err)
 	}
 
-	var outData []byte
-	outData, err = utils.PrettyJSON(response)
+	err = utils.WritePrettyJSONFile(filename, response)
 	if err != nil {
-		log.Fatalf("Failed to marshal JSON: %v", err)
+		log.Fatal(err)
 	}
-
-	if err = os.WriteFile(filename, outData, 0644); err != nil {
-		log.Fatalf("Failed to write output file: %v", err)
-	}
-
-	fmt.Println("Comparison saved to " + filename)
 }

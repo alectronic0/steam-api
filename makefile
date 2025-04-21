@@ -7,6 +7,9 @@ get_steam_api_list:
 list_steam_apps:
 	go run cmd/list_steam_apps/main.go
 
+list_steam_apps:
+	go run cmd/web/main.go
+
 test:
 	go test ./...
 

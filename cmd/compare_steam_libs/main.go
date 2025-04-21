@@ -3,53 +3,34 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"steam-api/internal/config"
 	"steam-api/internal/steamclient"
 	"steam-api/internal/steamgamecomparator"
 	"steam-api/internal/steamservice"
 	"steam-api/pkg/utils"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
-const (
-	fileNameTemplate = "./output/comparison_result_%v_%v_%v.json"
-)
+const fileNameTemplate = "./output/comparison_result_%v_%v_%v.json"
 
 func main() {
-	err := godotenv.Load(".env")
+	appConifg, err := config.LoadAppConfig()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %s", err)
+		log.Fatal(err)
 	}
 
-	apiKey := os.Getenv("STEAM_API_KEY")
-	if apiKey == "" {
-		log.Fatal("STEAM_API_KEY environment variable not set")
-	}
-
-	testUser1 := os.Getenv("TEST_USER_1")
-	testUser2 := os.Getenv("TEST_USER_2")
-
-	steamClient := steamclient.New(apiKey)
+	steamClient := steamclient.New(appConifg.ApiKey)
 	steamService := steamservice.New(steamClient)
 	comparatorService := steamgamecomparator.New(steamService)
 
-	response, err := comparatorService.CompareOwnedGames(testUser1, testUser2)
+	response, err := comparatorService.CompareOwnedGames(appConifg.TestUserID1, appConifg.TestUserID2)
 	if err != nil {
-		log.Fatalf("Error fetching games for user 1: %v", err)
+		log.Fatal(err)
 	}
 
-	var outData []byte
-	outData, err = utils.PrettyJSON(response)
+	filename := fmt.Sprintf(fileNameTemplate, appConifg.TestUserID1, appConifg.TestUserID2, time.Now().Unix())
+	err = utils.WritePrettyJSONFile(filename, response)
 	if err != nil {
-		log.Fatalf("Failed to marshal JSON: %v", err)
+		log.Fatal(err)
 	}
-
-	filename := fmt.Sprintf(fileNameTemplate, testUser1, testUser2, time.Now().Unix())
-	if err = os.WriteFile(filename, outData, 0644); err != nil {
-		log.Fatalf("Failed to write output file: %v", err)
-	}
-
-	fmt.Println("Comparison saved to " + filename)
 }
