@@ -1,6 +1,7 @@
 package steamservice
 
 import (
+	"fmt"
 	"steam-api/internal/steamclient"
 	"steam-api/pkg/utils"
 	"strconv"
@@ -29,11 +30,6 @@ type OwnedGame struct {
 	StoreData *steamclient.StoreData `json:"store_data,omitempty"`
 }
 
-func (g OwnedGame) SetStoreData(storeData steamclient.StoreData) OwnedGame {
-	g.StoreData = &storeData
-	return g
-}
-
 func OwnedGamesFromAPI(m *steamclient.GetOwnedGamesAPIResponse) OwnedGames {
 	if m == nil {
 		return OwnedGames{
@@ -49,6 +45,8 @@ func OwnedGamesFromAPI(m *steamclient.GetOwnedGamesAPIResponse) OwnedGames {
 	}
 }
 
+const SteamImgAssetHeader = "http://media.steampowered.com/steamcommunity/public/images/apps/%s/%s.jpg"
+
 func ownedGameFromAPI(m []steamclient.OwnedGame) map[string]OwnedGame {
 	ownedGames := map[string]OwnedGame{}
 	for _, g := range m {
@@ -56,7 +54,7 @@ func ownedGameFromAPI(m []steamclient.OwnedGame) map[string]OwnedGame {
 		ownedGames[stringID] = OwnedGame{
 			ID:                       stringID,
 			Name:                     g.Name,
-			ImgIconUrl:               g.ImgIconUrl,
+			ImgIconUrl:               fmt.Sprintf(SteamImgAssetHeader, stringID, g.ImgIconUrl),
 			HasCommunityVisibleStats: g.HasCommunityVisibleStats,
 			PlaytimeForever:          utils.NewDuration(time.Minute * time.Duration(g.PlaytimeForever)),
 			PlaytimeWindowsForever:   utils.NewDuration(time.Minute * time.Duration(g.PlaytimeWindowsForever)),

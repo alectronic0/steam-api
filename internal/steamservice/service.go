@@ -144,8 +144,6 @@ func (s Service) HydrateGames(games []OwnedGame) ([]OwnedGame, error) {
 		appIds[i] = game.ID
 	}
 
-	println(appIds)
-
 	storeData, err := s.client.GetStoreData(appIds...)
 	if err != nil {
 		return games, err

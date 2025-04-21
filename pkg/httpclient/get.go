@@ -6,6 +6,7 @@ import (
 )
 
 func NillableGet[Res any](reqURL string) (*Res, error) {
+	println(reqURL)
 	resp, err := http.Get(reqURL)
 	if err != nil {
 		return nil, err
@@ -21,6 +22,7 @@ func NillableGet[Res any](reqURL string) (*Res, error) {
 }
 
 func Get[Res any](reqURL string) (Res, error) {
+	println(reqURL)
 	var result Res
 	resp, err := http.Get(reqURL)
 	if err != nil {

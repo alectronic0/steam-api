@@ -242,7 +242,16 @@ func (c Client) GetWishlistItemCount(steamID string) (*GetWishlistItemCountAPIRe
 }
 
 func (c Client) GetStoreData(appIDs ...string) (GetStoreDataAPIResponse, error) {
-	reqURL := BaseStoreURL + "/api/appdetails?appids=" + url.QueryEscape(strings.Join(appIDs, ","))
+	resp := GetStoreDataAPIResponse{}
 
-	return httpclient.Get[GetStoreDataAPIResponse](reqURL)
+	for _, appID := range appIDs {
+		reqURL := BaseStoreURL + "/api/appdetails?appids=" + url.QueryEscape(appID)
+		r, err := httpclient.Get[GetStoreDataAPIResponse](reqURL)
+		if err != nil {
+			return GetStoreDataAPIResponse{}, err
+		}
+		resp[appID] = r[appID]
+	}
+
+	return resp, nil
 }

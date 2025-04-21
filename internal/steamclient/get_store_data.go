@@ -8,45 +8,45 @@ type StoreDataResponse struct {
 }
 
 type StoreData struct {
-	Type                string             `json:"type"`
-	Name                string             `json:"name"`
-	SteamAppID          int                `json:"steam_appid"`
-	RequiredAge         int                `json:"required_age"`
-	IsFree              bool               `json:"is_free"`
-	ControllerSupport   string             `json:"controller_support"`
-	Dlc                 []int              `json:"dlc"`
-	DetailedDescription string             `json:"detailed_description"`
-	AboutTheGame        string             `json:"about_the_game"`
-	ShortDescription    string             `json:"short_description"`
-	SupportedLanguages  string             `json:"supported_languages"`
-	Reviews             string             `json:"reviews"`
-	HeaderImage         string             `json:"header_image"`
-	CapsuleImage        string             `json:"capsule_image"`
-	CapsuleImagev5      string             `json:"capsule_imagev5"`
-	Website             string             `json:"website"`
-	PcRequirements      Requirements       `json:"pc_requirements"`
-	MacRequirements     Requirements       `json:"mac_requirements"`
-	LinuxRequirements   Requirements       `json:"linux_requirements"`
-	LegalNotice         string             `json:"legal_notice"`
-	Developers          []string           `json:"developers"`
-	Publishers          []string           `json:"publishers"`
-	PriceOverview       PriceOverview      `json:"price_overview"`
-	Packages            []int              `json:"packages"`
-	PackageGroups       []PackageGroup     `json:"package_groups"`
-	Platforms           Platforms          `json:"platforms"`
-	Metacritic          Metacritic         `json:"metacritic"`
-	Categories          []Tag              `json:"categories"`
-	Genres              []Tag              `json:"genres"`
-	Screenshots         []Screenshot       `json:"screenshots"`
-	Movies              []Movie            `json:"movies"`
-	Recommendations     Recommendations    `json:"recommendations"`
-	Achievements        Achievements       `json:"achievements"`
-	ReleaseDate         ReleaseDate        `json:"release_date"`
-	SupportInfo         SupportInfo        `json:"support_info"`
-	Background          string             `json:"background"`
-	BackgroundRaw       string             `json:"background_raw"`
-	ContentDescriptors  ContentDescriptors `json:"content_descriptors"`
-	Ratings             Ratings            `json:"ratings"`
+	Type       string `json:"type"`
+	Name       string `json:"name"`
+	SteamAppID int    `json:"steam_appid"`
+	//RequiredAge         string `json:"required_age"`
+	IsFree              bool   `json:"is_free"`
+	ControllerSupport   string `json:"controller_support"`
+	Dlc                 []int  `json:"dlc"`
+	DetailedDescription string `json:"detailed_description"`
+	AboutTheGame        string `json:"about_the_game"`
+	ShortDescription    string `json:"short_description"`
+	SupportedLanguages  string `json:"supported_languages"`
+	Reviews             string `json:"reviews"`
+	HeaderImage         string `json:"header_image"`
+	CapsuleImage        string `json:"capsule_image"`
+	CapsuleImagev5      string `json:"capsule_imagev5"`
+	Website             string `json:"website"`
+	//PcRequirements      Requirements       `json:"pc_requirements"`
+	//MacRequirements     Requirements       `json:"mac_requirements"`
+	//LinuxRequirements   Requirements       `json:"linux_requirements"`
+	LegalNotice        string                    `json:"legal_notice"`
+	Developers         []string                  `json:"developers"`
+	Publishers         []string                  `json:"publishers"`
+	PriceOverview      PriceOverview             `json:"price_overview"`
+	Packages           []int                     `json:"packages"`
+	PackageGroups      []PackageGroup            `json:"package_groups"`
+	Platforms          Platforms                 `json:"platforms"`
+	Metacritic         Metacritic                `json:"metacritic"`
+	Categories         []Tag                     `json:"categories"`
+	Genres             []Tag                     `json:"genres"`
+	Screenshots        []Screenshot              `json:"screenshots"`
+	Movies             []Movie                   `json:"movies"`
+	Recommendations    Recommendations           `json:"recommendations"`
+	Achievements       Achievements              `json:"achievements"`
+	ReleaseDate        ReleaseDate               `json:"release_date"`
+	SupportInfo        SupportInfo               `json:"support_info"`
+	Background         string                    `json:"background"`
+	BackgroundRaw      string                    `json:"background_raw"`
+	ContentDescriptors ContentDescriptors        `json:"content_descriptors"`
+	Ratings            map[string]DetailedRating `json:"ratings"`
 }
 
 type Requirements struct {
@@ -64,12 +64,12 @@ type PriceOverview struct {
 }
 
 type PackageGroup struct {
-	Name                    string `json:"name"`
-	Title                   string `json:"title"`
-	Description             string `json:"description"`
-	SelectionText           string `json:"selection_text"`
-	SaveText                string `json:"save_text"`
-	DisplayType             int    `json:"display_type"`
+	Name          string `json:"name"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	SelectionText string `json:"selection_text"`
+	SaveText      string `json:"save_text"`
+	//DisplayType             string `json:"display_type"`
 	IsRecurringSubscription string `json:"is_recurring_subscription"`
 	Subs                    []Sub  `json:"subs"`
 }
@@ -96,18 +96,18 @@ type Metacritic struct {
 }
 
 type Tag struct {
-	ID          string `json:"id"`
+	//ID          uint64 `json:"id"`
 	Description string `json:"description"`
 }
 
 type Screenshot struct {
-	ID            string `json:"id"`
+	ID            uint64 `json:"id"`
 	PathThumbnail string `json:"path_thumbnail"`
 	PathFull      string `json:"path_full"`
 }
 
 type Movie struct {
-	ID        string `json:"id"`
+	ID        uint64 `json:"id"`
 	Name      string `json:"name"`
 	Thumbnail string `json:"thumbnail"`
 	Webm      Video  `json:"webm"`
@@ -149,21 +149,11 @@ type ContentDescriptors struct {
 	Notes string   `json:"notes"`
 }
 
-type Ratings struct {
-	Esrb         SimpleRatings   `json:"esrb"`
-	Dejus        DetailedRatings `json:"dejus"`
-	SteamGermany DetailedRatings `json:"steam_germany"`
-}
-type SimpleRatings struct {
-	Rating      string `json:"rating"`
-	Descriptors string `json:"descriptors"`
-}
-
-type DetailedRatings struct {
+type DetailedRating struct {
 	RatingGenerated string `json:"rating_generated"`
 	Rating          string `json:"rating"`
-	RequiredAge     string `json:"required_age"`
-	Banned          string `json:"banned"`
-	UseAgeGate      string `json:"use_age_gate"`
-	Descriptors     string `json:"descriptors"`
+	//RequiredAge     string `json:"required_age"`
+	Banned      string `json:"banned"`
+	UseAgeGate  string `json:"use_age_gate"`
+	Descriptors string `json:"descriptors"`
 }
