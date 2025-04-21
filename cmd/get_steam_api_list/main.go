@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"steam-api/internal/steamclient"
 	"steam-api/internal/steamservice"
 	"steam-api/pkg/utils"
-	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 const (
@@ -27,15 +25,12 @@ func main() {
 		log.Fatal("STEAM_API_KEY environment variable not set")
 	}
 
-	testUser1, err := strconv.ParseUint(os.Getenv("TEST_USER_1"), 10, 64)
-	if err != nil {
-		log.Fatal("TEST_USER_1 environment variable is either not set or is not a valid uint64")
-	}
+	testUser1 := os.Getenv("TEST_USER_1")
 
 	steamClient := steamclient.New(apiKey)
 	steamService := steamservice.New(steamClient)
 
-	response, err := steamService.GetSupportApiList(apiKey, testUser1, 4000)
+	response, err := steamService.GetSupportApiList(apiKey, testUser1, "4000")
 	if err != nil {
 		log.Fatalf("Error fetching games for user 1: %v", err)
 	}

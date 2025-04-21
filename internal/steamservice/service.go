@@ -3,38 +3,16 @@ package steamservice
 import "steam-api/internal/steamclient"
 
 type IService interface {
-	GetSupportApiList(apiKey string, steamID, appID uint64) (SupportedAPIList, error)
+	GetSupportApiList(apiKey, steamID, appID string) (SupportedAPIList, error)
 
-	GetUserInfo(steamID uint64) (*UserInfoWithGameInfo, error)
-	GetUserInfoWithGameInfo(steamID, appID uint64) (*UserInfoWithGameInfo, error)
-	GetAppList() (map[uint64]string, error)
+	GetUserInfo(steamID string) (*UserInfoWithGameInfo, error)
+	GetUserInfoWithGameInfo(steamID, appID string) (*UserInfoWithGameInfo, error)
+	GetAppList() (map[string]string, error)
+	HydrateGames(games []OwnedGame) ([]OwnedGame, error)
 }
 
 type Service struct {
 	client steamclient.IClient
-}
-
-func (s Service) GetAppList() (map[uint64]string, error) {
-	appList, err := s.client.GetAppList()
-	if err != nil {
-		return map[uint64]string{}, err
-	}
-
-	mapOfApps := map[uint64]string{}
-	for _, v := range appList.AppList.Apps {
-		mapOfApps[v.AppID] = v.Name
-	}
-
-	return mapOfApps, nil
-}
-
-func (s Service) GetSupportApiList(apiKey string, steamID, appID uint64) (SupportedAPIList, error) {
-	supportedAPIList, err := s.client.GetSupportedAPIList()
-	if err != nil {
-		return SupportedAPIList{}, err
-	}
-
-	return SupportedAPIListFromAPI(supportedAPIList, apiKey, steamID, appID), nil
 }
 
 func New(client steamclient.IClient) IService {
@@ -43,7 +21,30 @@ func New(client steamclient.IClient) IService {
 	}
 }
 
-func (s Service) GetUserInfo(steamID uint64) (*UserInfoWithGameInfo, error) {
+func (s Service) GetAppList() (map[string]string, error) {
+	appList, err := s.client.GetAppList()
+	if err != nil {
+		return map[string]string{}, err
+	}
+
+	mapOfApps := map[string]string{}
+	for _, v := range appList.AppList.Apps {
+		mapOfApps[v.AppID] = v.Name
+	}
+
+	return mapOfApps, nil
+}
+
+func (s Service) GetSupportApiList(apiKey, steamID, appID string) (SupportedAPIList, error) {
+	supportedAPIList, err := s.client.GetSupportedAPIList()
+	if err != nil {
+		return SupportedAPIList{}, err
+	}
+
+	return SupportedAPIListFromAPI(supportedAPIList, apiKey, steamID, appID), nil
+}
+
+func (s Service) GetUserInfo(steamID string) (*UserInfoWithGameInfo, error) {
 	var (
 		err                         error
 		playerSummariesResponse     *steamclient.GetPlayerSummariesAPIResponse
@@ -82,7 +83,7 @@ func (s Service) GetUserInfo(steamID uint64) (*UserInfoWithGameInfo, error) {
 	}, nil
 }
 
-func (s Service) GetUserInfoWithGameInfo(steamID, appID uint64) (*UserInfoWithGameInfo, error) {
+func (s Service) GetUserInfoWithGameInfo(steamID, appID string) (*UserInfoWithGameInfo, error) {
 	var (
 		err                         error
 		playerSummariesResponse     *steamclient.GetPlayerSummariesAPIResponse
@@ -135,4 +136,26 @@ func (s Service) GetUserInfoWithGameInfo(steamID, appID uint64) (*UserInfoWithGa
 			UserStatsForGame:   UserStatsForGameFromAPI(userStatsForGameResponse),
 		},
 	}, nil
+}
+
+func (s Service) HydrateGames(games []OwnedGame) ([]OwnedGame, error) {
+	var appIds = make([]string, len(games))
+	for i, game := range games {
+		appIds[i] = game.ID
+	}
+
+	println(appIds)
+
+	storeData, err := s.client.GetStoreData(appIds...)
+	if err != nil {
+		return games, err
+	}
+
+	for _, game := range games {
+		if data, ok := storeData[game.ID]; ok {
+			game.StoreData = &data.Data
+		}
+	}
+
+	return games, nil
 }

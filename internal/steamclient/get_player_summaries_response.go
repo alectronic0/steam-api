@@ -9,7 +9,7 @@ type PlayerSummaries struct {
 }
 
 type Player struct {
-	ID                       uint64 `json:"steamid"`
+	ID                       string `json:"steamid"`
 	Communityvisibilitystate int64  `json:"communityvisibilitystate"`
 	Profilestate             int64  `json:"profilestate"`
 	Personaname              string `json:"personaname"`
@@ -21,7 +21,7 @@ type Player struct {
 	Lastlogoff               int64  `json:"lastlogoff"`
 	Personastate             int64  `json:"personastate"`
 	Realname                 string `json:"realname"`
-	Primaryclanid            string `json:"primaryclanid"`
+	PrimaryclanID            string `json:"primaryclanid"`
 	Timecreated              int64  `json:"timecreated"`
 	Personastateflags        int64  `json:"personastateflags"`
 	Loccountrycode           string `json:"loccountrycode"`

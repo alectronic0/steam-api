@@ -3,16 +3,17 @@ package steamservice
 import (
 	"steam-api/internal/steamclient"
 	"steam-api/pkg/utils"
+	"strconv"
 	"time"
 )
 
 type OwnedGames struct {
-	GameCount int64               `json:"game_count"`
-	Games     map[int64]OwnedGame `json:"games"`
+	GameCount uint64               `json:"game_count"`
+	Games     map[string]OwnedGame `json:"games"`
 }
 
 type OwnedGame struct {
-	ID                       int64          `json:"id"`
+	ID                       string         `json:"id"`
 	Name                     string         `json:"name"`
 	ImgIconUrl               string         `json:"img_icon_url"`
 	HasCommunityVisibleStats bool           `json:"has_community_visible_stats"`
@@ -23,13 +24,21 @@ type OwnedGame struct {
 	PlaytimeDeckForever      utils.Duration `json:"playtime_deck_forever"`
 	PlaytimeDisconnected     utils.Duration `json:"playtime_disconnected"`
 	LastPlayedTime           time.Time      `json:"last_played_time"`
+
+	// Optional Fields
+	StoreData *steamclient.StoreData `json:"store_data,omitempty"`
+}
+
+func (g OwnedGame) SetStoreData(storeData steamclient.StoreData) OwnedGame {
+	g.StoreData = &storeData
+	return g
 }
 
 func OwnedGamesFromAPI(m *steamclient.GetOwnedGamesAPIResponse) OwnedGames {
 	if m == nil {
 		return OwnedGames{
-			GameCount: int64(0),
-			Games:     map[int64]OwnedGame{},
+			GameCount: 0,
+			Games:     map[string]OwnedGame{},
 		}
 	}
 
@@ -40,11 +49,12 @@ func OwnedGamesFromAPI(m *steamclient.GetOwnedGamesAPIResponse) OwnedGames {
 	}
 }
 
-func ownedGameFromAPI(m []steamclient.OwnedGame) map[int64]OwnedGame {
-	ownedGames := map[int64]OwnedGame{}
+func ownedGameFromAPI(m []steamclient.OwnedGame) map[string]OwnedGame {
+	ownedGames := map[string]OwnedGame{}
 	for _, g := range m {
-		ownedGames[g.ID] = OwnedGame{
-			ID:                       g.ID,
+		stringID := strconv.FormatUint(g.ID, 10)
+		ownedGames[stringID] = OwnedGame{
+			ID:                       stringID,
 			Name:                     g.Name,
 			ImgIconUrl:               g.ImgIconUrl,
 			HasCommunityVisibleStats: g.HasCommunityVisibleStats,

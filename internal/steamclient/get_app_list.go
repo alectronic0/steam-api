@@ -5,7 +5,7 @@ type GetAppListAPIResponse struct {
 }
 
 type App struct {
-	AppID uint64 `json:"appid"`
+	AppID string `json:"appid"`
 	Name  string `json:"name"`
 }
 

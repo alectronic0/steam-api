@@ -10,7 +10,7 @@ type RecentlyPlayedGames struct {
 }
 
 type RecentlyPlayedGame struct {
-	ID                     int    `json:"appid"`
+	ID                     uint64 `json:"appid"`
 	Name                   string `json:"name"`
 	Playtime2Weeks         int    `json:"playtime_2weeks"`
 	PlaytimeForever        int    `json:"playtime_forever"`

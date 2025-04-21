@@ -8,7 +8,6 @@ import (
 	"steam-api/internal/steamgamecomparator"
 	"steam-api/internal/steamservice"
 	"steam-api/pkg/utils"
-	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -29,15 +28,8 @@ func main() {
 		log.Fatal("STEAM_API_KEY environment variable not set")
 	}
 
-	testUser1, err := strconv.ParseUint(os.Getenv("TEST_USER_1"), 10, 64)
-	if err != nil {
-		log.Fatal("TEST_USER_1 environment variable is either not set or is not a valid uint64")
-	}
-
-	testUser2, err := strconv.ParseUint(os.Getenv("TEST_USER_2"), 10, 64)
-	if err != nil {
-		log.Fatal("TEST_USER_2 environment variable is either not set or is not a valid uint64")
-	}
+	testUser1 := os.Getenv("TEST_USER_1")
+	testUser2 := os.Getenv("TEST_USER_2")
 
 	steamClient := steamclient.New(apiKey)
 	steamService := steamservice.New(steamClient)

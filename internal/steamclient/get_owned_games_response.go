@@ -5,12 +5,12 @@ type GetOwnedGamesAPIResponse struct {
 }
 
 type OwnedGames struct {
-	GameCount int64       `json:"game_count"`
+	GameCount uint64      `json:"game_count"`
 	Games     []OwnedGame `json:"games"`
 }
 
 type OwnedGame struct {
-	ID                       int64  `json:"appid"`
+	ID                       uint64 `json:"appid"`
 	Name                     string `json:"name"`
 	PlaytimeForever          int64  `json:"playtime_forever"`
 	ImgIconUrl               string `json:"img_icon_url"`

@@ -79,7 +79,7 @@ var defaultText = map[string]string{
 	"bool":      defaultBool,
 }
 
-func SupportedAPIListFromAPI(m *steamclient.GetSupportedAPIListAPIResponse, apiKey string, steamID, appID uint64) SupportedAPIList {
+func SupportedAPIListFromAPI(m *steamclient.GetSupportedAPIListAPIResponse, apiKey, steamID, appID string) SupportedAPIList {
 	if m == nil {
 		return SupportedAPIList{}
 	}
@@ -102,13 +102,13 @@ func SupportedAPIListFromAPI(m *steamclient.GetSupportedAPIListAPIResponse, apiK
 				case "key":
 					params = append(params, p.Name+"="+apiKey)
 				case "steamid":
-					params = append(params, p.Name+"="+strconv.FormatUint(steamID, 10))
+					params = append(params, p.Name+"="+steamID)
 				case "steamids":
-					params = append(params, p.Name+"="+strconv.FormatUint(steamID, 10))
+					params = append(params, p.Name+"="+steamID)
 				case "appid":
-					params = append(params, p.Name+"="+strconv.FormatUint(appID, 10))
+					params = append(params, p.Name+"="+appID)
 				case "gameid":
-					params = append(params, p.Name+"="+strconv.FormatUint(appID, 10))
+					params = append(params, p.Name+"="+appID)
 				case "vanityurl":
 					params = append(params, p.Name+"="+"alectronic0")
 				case "url_type":

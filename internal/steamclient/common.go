@@ -33,7 +33,7 @@ type BadgeResponse struct {
 }
 
 type Badge struct {
-	Badgeid        int64 `json:"badgeid"`
+	ID             int64 `json:"badgeid"`
 	Level          int64 `json:"level"`
 	CompletionTime int64 `json:"completion_time"`
 	Xp             int64 `json:"xp"`
@@ -51,7 +51,7 @@ type CommunityBadges struct {
 	Quests []Quest `json:"quests"`
 }
 type Quest struct {
-	Questid   int64 `json:"questid"`
+	ID        int64 `json:"questid"`
 	Completed bool  `json:"completed"`
 }
 
@@ -99,7 +99,7 @@ type UserGroupListResponse struct {
 }
 
 type Group struct {
-	Gid string `json:"gid"`
+	ID string `json:"gid"`
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ type Wishlist struct {
 }
 
 type WishListItem struct {
-	Appid     int `json:"appid"`
+	ID        int `json:"appid"`
 	Priority  int `json:"priority"`
 	DateAdded int `json:"date_added"`
 }

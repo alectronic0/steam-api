@@ -3,6 +3,7 @@ package steamservice
 import (
 	"steam-api/internal/steamclient"
 	"steam-api/pkg/utils"
+	"strconv"
 	"time"
 )
 
@@ -12,7 +13,7 @@ type RecentlyPlayedGames struct {
 }
 
 type RecentlyPlayedGame struct {
-	ID                     int            `json:"id"`
+	ID                     string         `json:"id"`
 	Name                   string         `json:"name"`
 	ImgIconUrl             string         `json:"img_icon_url"`
 	Playtime2Weeks         utils.Duration `json:"playtime_2_weeks"`
@@ -41,8 +42,9 @@ func RecentlyPlayedGamesFromAPI(m *steamclient.GetRecentlyPlayedGamesAPIResponse
 func recentlyPlayedGameFromAPI(m []steamclient.RecentlyPlayedGame) []RecentlyPlayedGame {
 	recentlyPlayedGames := make([]RecentlyPlayedGame, len(m))
 	for i, v := range m {
+		stringID := strconv.FormatUint(v.ID, 10)
 		recentlyPlayedGames[i] = RecentlyPlayedGame{
-			ID:                     v.ID,
+			ID:                     stringID,
 			Name:                   v.Name,
 			ImgIconUrl:             v.ImgIconUrl,
 			Playtime2Weeks:         utils.NewDuration(time.Minute * time.Duration(v.Playtime2Weeks)),

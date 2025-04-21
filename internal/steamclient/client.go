@@ -3,41 +3,58 @@ package steamclient
 import (
 	"net/url"
 	"steam-api/pkg/httpclient"
-	"steam-api/pkg/utils"
 	"strconv"
 	"strings"
 )
 
 const (
-	BaseApiURL = "https://api.steampowered.com"
+	BaseApiURL   = "https://api.steampowered.com"
+	BaseStoreURL = "https://store.steampowered.com"
 )
 
 // IClient - https://developer.valvesoftware.com/wiki/Steam_Web_API
 type IClient interface {
+	// SteamIDs
+
+	GetPlayerSummaries(steamIDs ...string) (*GetPlayerSummariesAPIResponse, error)
+	GetPlayerBans(steamIDs ...string) (*GetPlayerBansAPIResponse, error)
+
+	// SteamID
+
+	GetBadges(steamID string) (*GetBadgesAPIResponse, error)
+	GetCommunityBadgeProgress(steamID, badgeID string) (*GetCommunityBadgeProgressAPIResponse, error)
+	GetFriendList(steamID string, filter GetFriendListFilter) (*GetFriendListAPIResponse, error)
+	GetOwnedGames(steamID string, includeAppInfo bool, includePlayedFreeGames bool) (*GetOwnedGamesAPIResponse, error)
+	GetRecentlyPlayedGames(steamID string, count *uint64) (*GetRecentlyPlayedGamesAPIResponse, error)
+	GetSteamLevel(steamID string) (*GetSteamLevelAPIResponse, error)
+	GetUserGroupList(steamID string) (*GetUserGroupListAPIResponse, error)
+	GetWishlist(steamID string) (*GetWishlistAPIResponse, error)
+	GetWishlistItemCount(steamID string) (*GetWishlistItemCountAPIResponse, error)
+
+	// AppIDs
+
+	GetStoreData(appIDs ...string) (GetStoreDataAPIResponse, error)
+
+	// AppID Only
+
+	GetGlobalAchievementPercentagesForApp(appID string) (*GetGlobalAchievementPercentagesForAppAPIResponse, error)
+	GetNumberOfCurrentPlayers(appID string) (*GetNumberOfCurrentPlayersAPIResponse, error)
+	GetSchemaForGame(appID string) (*GetSchemaForGameAPIResponse, error)
+
+	// SteamID & AppID
+
+	GetPlayerAchievements(steamID, appID string) (*GetPlayerAchievementsAPIResponse, error)
+	GetUserStatsForGame(steamID, appID string) (*GetUserStatsForGameAPIResponse, error)
+
+	// Other API
+
 	GetSupportedAPIList() (*GetSupportedAPIListAPIResponse, error)
 	GetAppList() (*GetAppListAPIResponse, error)
-
-	GetPlayerSummaries(steamIDs ...uint64) (*GetPlayerSummariesAPIResponse, error)
-	GetFriendList(steamID uint64, filter GetFriendListFilter) (*GetFriendListAPIResponse, error)
-	GetPlayerAchievements(steamID, appID uint64) (*GetPlayerAchievementsAPIResponse, error)
-	GetUserStatsForGame(steamID, appID uint64) (*GetUserStatsForGameAPIResponse, error)
-	GetOwnedGames(steamID uint64, includeAppInfo bool, includePlayedFreeGames bool) (*GetOwnedGamesAPIResponse, error)
-	GetRecentlyPlayedGames(steamID uint64, count *uint64) (*GetRecentlyPlayedGamesAPIResponse, error)
+	ResolveVanityURL(vanityUrl string, vanityURLType VanityURLType) (*ResolveVanityURLAPIResponse, error)
 
 	// To implement
-	GetBadges(steamID uint64) (*GetBadgesAPIResponse, error)
-	GetCommunityBadgeProgress(steamID uint64, badgeID uint64) (*GetCommunityBadgeProgressAPIResponse, error)
-	GetSteamLevel(steamID uint64) (*GetSteamLevelAPIResponse, error)
-	GetPlayerBans(steamIDs ...uint64) (*GetPlayerBansAPIResponse, error)
-	GetUserGroupList(steamID uint64) (*GetUserGroupListAPIResponse, error)
-	ResolveVanityURL(vanityUrl string, vanityURLType VanityURLType) (*ResolveVanityURLAPIResponse, error)
-	GetGlobalAchievementPercentagesForApp(appId uint64) (*GetGlobalAchievementPercentagesForAppAPIResponse, error)
-	// GetGlobalStatsForGame() (*GetGlobalStatsForGameAPIResponse, error) // TODO: Probably not worth it
-	GetNumberOfCurrentPlayers(appId uint64) (*GetNumberOfCurrentPlayersAPIResponse, error)
-	GetSchemaForGame(appId uint64) (*GetSchemaForGameAPIResponse, error)
 	// GetAppListWithFilters() (*GetAppListWithFiltersAPIResponse, error) // TODO:
-	GetWishlist(steamID uint64) (*GetWishlistAPIResponse, error)
-	GetWishlistItemCount(steamID uint64) (*GetWishlistItemCountAPIResponse, error)
+	// GetGlobalStatsForGame() (*GetGlobalStatsForGameAPIResponse, error) // TODO: Probably not worth it
 }
 
 type Client struct {
@@ -52,121 +69,121 @@ func New(apiKey string) IClient {
 
 func (c Client) GetSupportedAPIList() (*GetSupportedAPIListAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" + url.QueryEscape(c.apiKey)
-	return httpclient.Get[GetSupportedAPIListAPIResponse](reqURL)
+	return httpclient.NillableGet[GetSupportedAPIListAPIResponse](reqURL)
 }
 
 func (c Client) GetAppList() (*GetAppListAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamApps/GetAppList/v0002"
-	return httpclient.Get[GetAppListAPIResponse](reqURL)
+	return httpclient.NillableGet[GetAppListAPIResponse](reqURL)
 }
 
-func (c Client) GetPlayerSummaries(steamIDs ...uint64) (*GetPlayerSummariesAPIResponse, error) {
+func (c Client) GetPlayerSummaries(steamIDs ...string) (*GetPlayerSummariesAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUser/GetPlayerSummaries/v0002/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamids=" + url.QueryEscape(strings.Join(utils.ListUint64ToString(steamIDs...), ",")) +
+		"&steamids=" + url.QueryEscape(strings.Join(steamIDs, ",")) +
 		"&format=json"
 
-	return httpclient.Get[GetPlayerSummariesAPIResponse](reqURL)
+	return httpclient.NillableGet[GetPlayerSummariesAPIResponse](reqURL)
 }
 
-func (c Client) GetFriendList(steamID uint64, filter GetFriendListFilter) (*GetFriendListAPIResponse, error) {
+func (c Client) GetFriendList(steamID string, filter GetFriendListFilter) (*GetFriendListAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUser/GetFriendList/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&relationship=" + url.QueryEscape(filter.String()) +
 		"&format=json"
 
-	return httpclient.Get[GetFriendListAPIResponse](reqURL)
+	return httpclient.NillableGet[GetFriendListAPIResponse](reqURL)
 }
 
-func (c Client) GetPlayerAchievements(steamID uint64, appid uint64) (*GetPlayerAchievementsAPIResponse, error) {
+func (c Client) GetPlayerAchievements(steamID, appID string) (*GetPlayerAchievementsAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUserStats/GetPlayerAchievements/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
-		"&appid=" + url.QueryEscape(strconv.FormatUint(appid, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
+		"&appid=" + url.QueryEscape(appID) +
 		"&format=json"
 
-	return httpclient.Get[GetPlayerAchievementsAPIResponse](reqURL)
+	return httpclient.NillableGet[GetPlayerAchievementsAPIResponse](reqURL)
 }
 
-func (c Client) GetUserStatsForGame(steamID, appID uint64) (*GetUserStatsForGameAPIResponse, error) {
+func (c Client) GetUserStatsForGame(steamID, appID string) (*GetUserStatsForGameAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUserStats/GetUserStatsForGame/v0002/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
-		"&appid=" + url.QueryEscape(strconv.FormatUint(appID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
+		"&appid=" + url.QueryEscape(appID) +
 		"&format=json"
 
-	return httpclient.Get[GetUserStatsForGameAPIResponse](reqURL)
+	return httpclient.NillableGet[GetUserStatsForGameAPIResponse](reqURL)
 }
 
-func (c Client) GetOwnedGames(steamID uint64, includeAppInfo bool, includePlayedFreeGames bool) (*GetOwnedGamesAPIResponse, error) {
+func (c Client) GetOwnedGames(steamID string, includeAppInfo bool, includePlayedFreeGames bool) (*GetOwnedGamesAPIResponse, error) {
 	reqURL := BaseApiURL + "/IPlayerService/GetOwnedGames/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&include_appinfo=" + strconv.FormatBool(includeAppInfo) +
 		"&include_played_free_games=" + strconv.FormatBool(includePlayedFreeGames) +
 		"&format=json"
 
-	return httpclient.Get[GetOwnedGamesAPIResponse](reqURL)
+	return httpclient.NillableGet[GetOwnedGamesAPIResponse](reqURL)
 }
 
-func (c Client) GetRecentlyPlayedGames(steamID uint64, count *uint64) (*GetRecentlyPlayedGamesAPIResponse, error) {
+func (c Client) GetRecentlyPlayedGames(steamID string, count *uint64) (*GetRecentlyPlayedGamesAPIResponse, error) {
 	reqURL := BaseApiURL + "/IPlayerService/GetRecentlyPlayedGames/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
 	if count != nil {
 		reqURL += "&count=" + strconv.FormatUint(*count, 10)
 	}
 
-	return httpclient.Get[GetRecentlyPlayedGamesAPIResponse](reqURL)
+	return httpclient.NillableGet[GetRecentlyPlayedGamesAPIResponse](reqURL)
 }
 
-func (c Client) GetBadges(steamID uint64) (*GetBadgesAPIResponse, error) {
+func (c Client) GetBadges(steamID string) (*GetBadgesAPIResponse, error) {
 	reqURL := BaseApiURL + "/IPlayerService/GetBadges/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
-	return httpclient.Get[GetBadgesAPIResponse](reqURL)
+	return httpclient.NillableGet[GetBadgesAPIResponse](reqURL)
 }
 
-func (c Client) GetCommunityBadgeProgress(steamID uint64, badgeID uint64) (*GetCommunityBadgeProgressAPIResponse, error) {
+func (c Client) GetCommunityBadgeProgress(steamID, badgeID string) (*GetCommunityBadgeProgressAPIResponse, error) {
 	reqURL := BaseApiURL + "/IPlayerService/GetCommunityBadgeProgress/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
-		"&badgeid" + url.QueryEscape(strconv.FormatUint(badgeID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
+		"&badgeid" + url.QueryEscape(badgeID) +
 		"&format=json"
 
-	return httpclient.Get[GetCommunityBadgeProgressAPIResponse](reqURL)
+	return httpclient.NillableGet[GetCommunityBadgeProgressAPIResponse](reqURL)
 }
 
-func (c Client) GetSteamLevel(steamID uint64) (*GetSteamLevelAPIResponse, error) {
+func (c Client) GetSteamLevel(steamID string) (*GetSteamLevelAPIResponse, error) {
 	reqURL := BaseApiURL + "/IPlayerService/GetSteamLevel/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
-	return httpclient.Get[GetSteamLevelAPIResponse](reqURL)
+	return httpclient.NillableGet[GetSteamLevelAPIResponse](reqURL)
 }
 
-func (c Client) GetPlayerBans(steamIDs ...uint64) (*GetPlayerBansAPIResponse, error) {
+func (c Client) GetPlayerBans(steamIDs ...string) (*GetPlayerBansAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUser/GetPlayerBans/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamids=" + url.QueryEscape(strings.Join(utils.ListUint64ToString(steamIDs...), ",")) +
+		"&steamids=" + url.QueryEscape(strings.Join(steamIDs, ",")) +
 		"&format=json"
 
-	return httpclient.Get[GetPlayerBansAPIResponse](reqURL)
+	return httpclient.NillableGet[GetPlayerBansAPIResponse](reqURL)
 }
 
-func (c Client) GetUserGroupList(steamID uint64) (*GetUserGroupListAPIResponse, error) {
+func (c Client) GetUserGroupList(steamID string) (*GetUserGroupListAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUser/GetUserGroupList/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
-	return httpclient.Get[GetUserGroupListAPIResponse](reqURL)
+	return httpclient.NillableGet[GetUserGroupListAPIResponse](reqURL)
 }
 
 func (c Client) ResolveVanityURL(vanityUrl string, vanityURLType VanityURLType) (*ResolveVanityURLAPIResponse, error) {
@@ -176,50 +193,56 @@ func (c Client) ResolveVanityURL(vanityUrl string, vanityURLType VanityURLType) 
 		"&url_type=" + url.QueryEscape(vanityURLType.String()) +
 		"&format=json"
 
-	return httpclient.Get[ResolveVanityURLAPIResponse](reqURL)
+	return httpclient.NillableGet[ResolveVanityURLAPIResponse](reqURL)
 }
 
-func (c Client) GetGlobalAchievementPercentagesForApp(appID uint64) (*GetGlobalAchievementPercentagesForAppAPIResponse, error) {
+func (c Client) GetGlobalAchievementPercentagesForApp(appID string) (*GetGlobalAchievementPercentagesForAppAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&appid=" + url.QueryEscape(strconv.FormatUint(appID, 10)) +
+		"&appid=" + url.QueryEscape(appID) +
 		"&format=json"
 
-	return httpclient.Get[GetGlobalAchievementPercentagesForAppAPIResponse](reqURL)
+	return httpclient.NillableGet[GetGlobalAchievementPercentagesForAppAPIResponse](reqURL)
 }
 
-func (c Client) GetNumberOfCurrentPlayers(appID uint64) (*GetNumberOfCurrentPlayersAPIResponse, error) {
+func (c Client) GetNumberOfCurrentPlayers(appID string) (*GetNumberOfCurrentPlayersAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUserStats/GetNumberOfCurrentPlayers/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&appid=" + url.QueryEscape(strconv.FormatUint(appID, 10)) +
+		"&appid=" + url.QueryEscape(appID) +
 		"&format=json"
 
-	return httpclient.Get[GetNumberOfCurrentPlayersAPIResponse](reqURL)
+	return httpclient.NillableGet[GetNumberOfCurrentPlayersAPIResponse](reqURL)
 }
 
-func (c Client) GetSchemaForGame(appID uint64) (*GetSchemaForGameAPIResponse, error) {
+func (c Client) GetSchemaForGame(appID string) (*GetSchemaForGameAPIResponse, error) {
 	reqURL := BaseApiURL + "/ISteamUserStats/GetSchemaForGame/v0002/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&appid=" + url.QueryEscape(strconv.FormatUint(appID, 10)) +
+		"&appid=" + url.QueryEscape(appID) +
 		"&format=json"
 
-	return httpclient.Get[GetSchemaForGameAPIResponse](reqURL)
+	return httpclient.NillableGet[GetSchemaForGameAPIResponse](reqURL)
 }
 
-func (c Client) GetWishlist(steamID uint64) (*GetWishlistAPIResponse, error) {
+func (c Client) GetWishlist(steamID string) (*GetWishlistAPIResponse, error) {
 	reqURL := BaseApiURL + "/IWishlistService/GetWishlist/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
-	return httpclient.Get[GetWishlistAPIResponse](reqURL)
+	return httpclient.NillableGet[GetWishlistAPIResponse](reqURL)
 }
 
-func (c Client) GetWishlistItemCount(steamID uint64) (*GetWishlistItemCountAPIResponse, error) {
+func (c Client) GetWishlistItemCount(steamID string) (*GetWishlistItemCountAPIResponse, error) {
 	reqURL := BaseApiURL + "/IWishlistService/GetWishlistItemCount/v0001/" +
 		"?key=" + url.QueryEscape(c.apiKey) +
-		"&steamid=" + url.QueryEscape(strconv.FormatUint(steamID, 10)) +
+		"&steamid=" + url.QueryEscape(steamID) +
 		"&format=json"
 
-	return httpclient.Get[GetWishlistItemCountAPIResponse](reqURL)
+	return httpclient.NillableGet[GetWishlistItemCountAPIResponse](reqURL)
+}
+
+func (c Client) GetStoreData(appIDs ...string) (GetStoreDataAPIResponse, error) {
+	reqURL := BaseStoreURL + "/api/appdetails?appids=" + url.QueryEscape(strings.Join(appIDs, ","))
+
+	return httpclient.Get[GetStoreDataAPIResponse](reqURL)
 }

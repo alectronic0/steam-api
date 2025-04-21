@@ -3,13 +3,13 @@ package utils
 import "time"
 
 type Duration struct {
-	Duration time.Duration `json:"duration"`
-	Min      float64       `json:"min"`
-	Hours    float64       `json:"hours"`
-	Days     float64       `json:"days"`
-	Weeks    float64       `json:"weeks"`
-	Months   float64       `json:"months"`
-	Years    float64       `json:"years"`
+	NanoSec time.Duration `json:"duration"`
+	Min     float64       `json:"-"` //`json:"min"`
+	Hours   float64       `json:"-"` //`json:"hours"`
+	Days    float64       `json:"-"` //`json:"days"`
+	Weeks   float64       `json:"-"` //`json:"weeks"`
+	Months  float64       `json:"-"` //`json:"months"`
+	Years   float64       `json:"-"` //`json:"years"`
 }
 
 func NewDuration(duration time.Duration) Duration {
@@ -29,12 +29,12 @@ func NewDuration(duration time.Duration) Duration {
 	//}
 
 	return Duration{
-		Duration: duration,
-		Min:      duration.Minutes(),
-		Hours:    hours,
-		Days:     days,
-		Weeks:    weeks,
-		Months:   months,
-		Years:    years,
+		NanoSec: duration,
+		Min:     duration.Minutes(),
+		Hours:   hours,
+		Days:    days,
+		Weeks:   weeks,
+		Months:  months,
+		Years:   years,
 	}
 }

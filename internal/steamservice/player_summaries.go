@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type PlayerSummaries map[uint64]PlayerSummary
+type PlayerSummaries map[string]PlayerSummary
 
 type PlayerSummary struct {
-	ID                       uint64    `json:"id"`
+	ID                       string    `json:"id"`
 	CommunityVisibilityState int64     `json:"community_visibility_state"`
 	ProfileState             int64     `json:"profile_state"`
 	PersonaName              string    `json:"persona_name"`
@@ -46,7 +46,7 @@ func PlayerSummariesFromAPI(m *steamclient.GetPlayerSummariesAPIResponse) Player
 			LastLogoff:               time.Unix(v.Lastlogoff, 0),
 			PersonaState:             v.Personastate,
 			RealName:                 v.Realname,
-			PrimaryClanID:            v.Primaryclanid,
+			PrimaryClanID:            v.PrimaryclanID,
 			TimeCreated:              time.Unix(v.Timecreated, 0),
 			PersonaStateFlags:        v.Personastateflags,
 			CountryCode:              v.Loccountrycode,

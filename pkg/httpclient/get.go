@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Get[Res any](reqURL string) (*Res, error) {
+func NillableGet[Res any](reqURL string) (*Res, error) {
 	resp, err := http.Get(reqURL)
 	if err != nil {
 		return nil, err
@@ -18,4 +18,19 @@ func Get[Res any](reqURL string) (*Res, error) {
 	}
 
 	return &result, nil
+}
+
+func Get[Res any](reqURL string) (Res, error) {
+	var result Res
+	resp, err := http.Get(reqURL)
+	if err != nil {
+		return result, err
+	}
+	defer resp.Body.Close()
+
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
