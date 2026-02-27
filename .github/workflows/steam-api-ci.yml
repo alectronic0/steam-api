@@ -1,0 +1,178 @@
+name: steam-api Tests & Security
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'steam-api/**'
+      - '.github/workflows/steam-api-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'steam-api/**'
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: steam-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        run: go test -v -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./steam-api/coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Display coverage
+        run: go tool cover -html=coverage.out -o coverage.html && echo "Coverage report generated"
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: steam-api/coverage.html
+          retention-days: 30
+
+  lint:
+    name: Linting & Code Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: steam-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: steam-api
+          args: --timeout=5m
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Go fmt check
+        run: |
+          if gofmt -l . | grep -q '.'; then
+            echo "❌ Code formatting issues found. Run 'gofmt -w .' to fix."
+            gofmt -l .
+            exit 1
+          fi
+          echo "✅ Code formatting is correct"
+
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: steam-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: gosec - Go Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt sarif -out results.sarif ./...'
+          working-directory: steam-api
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: steam-api/results.sarif
+        if: always()
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [ test, lint ]
+    defaults:
+      run:
+        working-directory: steam-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t steam-api:${{ github.sha }} -f Dockerfile .
+
+      - name: Verify image
+        run: docker images | grep steam-api
+
+  test-docker:
+    name: Test Docker Container
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: steam-api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test Docker
+        run: |
+          docker-compose build
+          docker-compose up -d
+          sleep 5
+          docker-compose exec -T steam-api wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1
+          docker-compose down
+
+  results:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    needs: [ test, lint, security, build, test-docker ]
+    if: always()
+
+    steps:
+      - name: Check test status
+        run: |
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.lint.result }}" == "failure" ]; then
+            echo "❌ Linting failed"
+            exit 1
+          fi
+          echo "✅ All checks passed!"
