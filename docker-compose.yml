@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: steam-api-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  steam-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: steam-api
+    ports:
+      - "8080:8080"
+    environment:
+      - STEAM_API_KEY=${STEAM_API_KEY}
+      - TEST_USER_1=${TEST_USER_1}
+      - TEST_USER_2=${TEST_USER_2}
+      - REDIS_URL=redis://redis:6379
+      - API_HOST=0.0.0.0
+      - API_PORT=8080
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../.env
+
+volumes:
+  redis-data:

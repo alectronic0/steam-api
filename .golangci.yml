@@ -1,0 +1,36 @@
+run:
+  timeout: 5m
+  tests: true
+  build-tags: []
+  skip-dirs-use-default: true
+
+linters-settings:
+  gofmt:
+    simplify: true
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.8
+  gosec:
+    severity: medium
+    confidence: medium
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - gosimple
+    - staticcheck
+    - unused
+    - gosec
+    - errorlint
+    - ineffassign
+    - misspell
+    - unconvert
+    - noctx
+    - bodyclose
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
