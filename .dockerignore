@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+.env.local
+output/
+example_data/
+*.md
+*.log
+.DS_Store
